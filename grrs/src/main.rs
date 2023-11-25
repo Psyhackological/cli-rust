@@ -1,9 +1,9 @@
 use anyhow::{Context, Result};
 use clap::Parser;
-use std::fs::File;
-use std::io::prelude::*;
-use std::io::BufReader;
-use std::io::{self, Write};
+use std::{
+    fs::File,
+    io::{self, prelude::*, BufReader},
+};
 
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(Parser)]
