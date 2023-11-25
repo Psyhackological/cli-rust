@@ -3,6 +3,7 @@ use clap::Parser;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
+use std::io::{self, Write};
 
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(Parser)]
@@ -19,6 +20,8 @@ fn main() -> Result<()> {
         .with_context(|| format!("could not read file `{}`", args.path.display()))?;
     let reader = BufReader::new(f);
 
+    let stdout = io::stdout();
+    let mut handle = io::BufWriter::new(stdout);
     for line in reader.lines() {
         let line = match line {
             Ok(ln) => ln,
@@ -26,8 +29,11 @@ fn main() -> Result<()> {
         };
 
         if line.contains(&args.pattern) {
-            println!("{}", line);
+            writeln!(handle, "{}", line)?;
         }
     }
+
+    handle.flush()?;
+
     Ok(())
 }
