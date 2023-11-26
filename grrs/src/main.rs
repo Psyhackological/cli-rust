@@ -14,35 +14,39 @@ struct Cli {
     path: std::path::PathBuf,
 }
 
-fn main() -> Result<()> {
-    let args = Cli::parse();
-    let f = File::open(&args.path)
-        .with_context(|| format!("could not read file `{}`", args.path.display()))?;
-    let reader = BufReader::new(f);
-
-    let stdout = io::stdout();
-    let mut handle = io::BufWriter::new(stdout);
+fn find_matches<R: BufRead>(reader: R, pattern: &str, mut writer: impl Write) -> Result<()> {
     for line in reader.lines() {
-        let line = match line {
-            Ok(ln) => ln,
-            Err(e) => return Err(e.into()),
-        };
-
-        if line.contains(&args.pattern) {
-            writeln!(handle, "{}", line)?;
+        let line = line.with_context(|| "Error reading line")?;
+        if line.contains(pattern) {
+            writeln!(writer, "{}", line).with_context(|| "Error writing to output")?;
         }
     }
-
-    handle.flush()?;
 
     Ok(())
 }
 
-fn answer() -> i64 {
-    42
+fn main() -> Result<()> {
+    let args = Cli::parse();
+    let f = File::open(&args.path)
+        .with_context(|| format!("Could not read file `{}`", args.path.display()))?;
+
+    let reader = BufReader::new(f);
+    let stdout = io::stdout();
+    let mut handle = io::BufWriter::new(stdout);
+
+    find_matches(reader, &args.pattern, &mut handle)?;
+
+    handle.flush().with_context(|| "Error flushing output")?;
+
+    Ok(())
 }
 
 #[test]
-fn check_answer_validity() {
-    assert_eq!(answer(), 42);
+fn find_a_match() {
+    let file_content = "lorem ipsum\ndolor sit amet".as_bytes();
+    let reader = BufReader::new(file_content);
+    let mut result = Vec::new();
+    let match_result = find_matches(reader, "lorem", &mut result);
+    assert!(match_result.is_ok());
+    assert_eq!(result, b"lorem ipsum\n");
 }
