@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use clap::Parser;
+use grrs::find_matches;
 use std::{
     fs::File,
     io::{self, prelude::*, BufReader},
@@ -12,17 +13,6 @@ struct Cli {
     pattern: String,
     // The path to the file to read
     path: std::path::PathBuf,
-}
-
-fn find_matches<R: BufRead, W: Write>(reader: R, pattern: &str, mut writer: W) -> Result<W> {
-    for line in reader.lines() {
-        let line = line.with_context(|| "Error reading line")?;
-        if line.contains(pattern) {
-            writeln!(writer, "{}", line).with_context(|| "Error writing to output")?;
-        }
-    }
-
-    Ok(writer)
 }
 
 fn main() -> Result<()> {
