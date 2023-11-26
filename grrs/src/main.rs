@@ -14,7 +14,7 @@ struct Cli {
     path: std::path::PathBuf,
 }
 
-fn find_matches<R: BufRead>(reader: R, pattern: &str, mut writer: impl Write) -> Result<()> {
+fn find_matches<R: BufRead, W: Write>(reader: R, pattern: &str, mut writer: W) -> Result<W> {
     for line in reader.lines() {
         let line = line.with_context(|| "Error reading line")?;
         if line.contains(pattern) {
@@ -22,7 +22,7 @@ fn find_matches<R: BufRead>(reader: R, pattern: &str, mut writer: impl Write) ->
         }
     }
 
-    Ok(())
+    Ok(writer)
 }
 
 fn main() -> Result<()> {
