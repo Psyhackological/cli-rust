@@ -37,3 +37,12 @@ fn main() -> Result<()> {
 
     Ok(())
 }
+
+fn answer() -> i64 {
+    42
+}
+
+#[test]
+fn check_answer_validity() {
+    assert_eq!(answer(), 42);
+}
